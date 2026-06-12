@@ -1,0 +1,36 @@
+{
+  "name": "audioc2",
+  "version": "0.1.0",
+  "description": "Pure JavaScript AMR-NB codec, hand-ported from opencore-amr 0.1.6 (bit-exact)",
+  "type": "module",
+  "main": "src/index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "gen-tables": "node tools/extract-tables.mjs",
+    "gen-reference": "node tools/gen-reference.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "amr",
+    "amr-nb",
+    "codec",
+    "audio",
+    "opencore-amr"
+  ],
+  "license": "Apache-2.0"
+}

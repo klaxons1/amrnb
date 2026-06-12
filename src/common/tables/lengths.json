@@ -1,0 +1,256 @@
+{
+ "prmno": {
+  "file": "bitno_tab",
+  "len": 9
+ },
+ "prmnofsf": {
+  "file": "bitno_tab",
+  "len": 8
+ },
+ "bitno_MR475": {
+  "file": "bitno_tab",
+  "len": 17
+ },
+ "bitno_MR515": {
+  "file": "bitno_tab",
+  "len": 19
+ },
+ "bitno_MR59": {
+  "file": "bitno_tab",
+  "len": 19
+ },
+ "bitno_MR67": {
+  "file": "bitno_tab",
+  "len": 19
+ },
+ "bitno_MR74": {
+  "file": "bitno_tab",
+  "len": 19
+ },
+ "bitno_MR795": {
+  "file": "bitno_tab",
+  "len": 23
+ },
+ "bitno_MR102": {
+  "file": "bitno_tab",
+  "len": 39
+ },
+ "bitno_MR122": {
+  "file": "bitno_tab",
+  "len": 57
+ },
+ "bitno_MRDTX": {
+  "file": "bitno_tab",
+  "len": 5
+ },
+ "bitno": {
+  "file": "bitno_tab",
+  "len": 9,
+  "ptr": true
+ },
+ "numOfBits": {
+  "file": "bitreorder_tab",
+  "len": 16
+ },
+ "reorderBits_MR475": {
+  "file": "bitreorder_tab",
+  "len": 95
+ },
+ "reorderBits_MR515": {
+  "file": "bitreorder_tab",
+  "len": 103
+ },
+ "reorderBits_MR59": {
+  "file": "bitreorder_tab",
+  "len": 118
+ },
+ "reorderBits_MR67": {
+  "file": "bitreorder_tab",
+  "len": 134
+ },
+ "reorderBits_MR74": {
+  "file": "bitreorder_tab",
+  "len": 148
+ },
+ "reorderBits_MR795": {
+  "file": "bitreorder_tab",
+  "len": 159
+ },
+ "reorderBits_MR102": {
+  "file": "bitreorder_tab",
+  "len": 204
+ },
+ "reorderBits_MR122": {
+  "file": "bitreorder_tab",
+  "len": 244
+ },
+ "numCompressedBytes": {
+  "file": "bitreorder_tab",
+  "len": 16
+ },
+ "reorderBits": {
+  "file": "bitreorder_tab",
+  "len": 8,
+  "ptr": true
+ },
+ "startPos": {
+  "file": "c2_9pf_tab",
+  "len": 16
+ },
+ "qua_gain_pitch": {
+  "file": "gains_tbl",
+  "len": 16
+ },
+ "qua_gain_code": {
+  "file": "gains_tbl",
+  "len": 99
+ },
+ "gray": {
+  "file": "gray_tbl",
+  "len": 8
+ },
+ "dgray": {
+  "file": "gray_tbl",
+  "len": 8
+ },
+ "grid": {
+  "file": "grid_tbl",
+  "len": 61
+ },
+ "inv_sqrt_tbl": {
+  "file": "inv_sqrt_tbl",
+  "len": 49
+ },
+ "log2_tbl": {
+  "file": "log2_tbl",
+  "len": 33
+ },
+ "table": {
+  "file": "lsp_lsf_tbl",
+  "len": 65
+ },
+ "slope": {
+  "file": "lsp_lsf_tbl",
+  "len": 64
+ },
+ "lsp_init_data": {
+  "file": "lsp_tab",
+  "len": 10
+ },
+ "overflow_tbl": {
+  "file": "overflow_tbl",
+  "len": 32
+ },
+ "ph_imp_low_MR795": {
+  "file": "ph_disp_tab",
+  "len": 40
+ },
+ "ph_imp_mid_MR795": {
+  "file": "ph_disp_tab",
+  "len": 40
+ },
+ "ph_imp_low": {
+  "file": "ph_disp_tab",
+  "len": 40
+ },
+ "ph_imp_mid": {
+  "file": "ph_disp_tab",
+  "len": 40
+ },
+ "pow2_tbl": {
+  "file": "pow2_tbl",
+  "len": 33
+ },
+ "past_rq_init": {
+  "file": "q_plsf_3_tbl",
+  "len": 80
+ },
+ "mean_lsf_3": {
+  "file": "q_plsf_3_tbl",
+  "len": 10
+ },
+ "pred_fac_3": {
+  "file": "q_plsf_3_tbl",
+  "len": 10
+ },
+ "dico1_lsf_3": {
+  "file": "q_plsf_3_tbl",
+  "len": 768
+ },
+ "dico2_lsf_3": {
+  "file": "q_plsf_3_tbl",
+  "len": 1536
+ },
+ "dico3_lsf_3": {
+  "file": "q_plsf_3_tbl",
+  "len": 2048
+ },
+ "mr515_3_lsf": {
+  "file": "q_plsf_3_tbl",
+  "len": 512
+ },
+ "mr795_1_lsf": {
+  "file": "q_plsf_3_tbl",
+  "len": 1536
+ },
+ "mean_lsf_5": {
+  "file": "q_plsf_5_tbl",
+  "len": 10
+ },
+ "dico1_lsf_5": {
+  "file": "q_plsf_5_tbl",
+  "len": 512
+ },
+ "dico2_lsf_5": {
+  "file": "q_plsf_5_tbl",
+  "len": 1024
+ },
+ "dico3_lsf_5": {
+  "file": "q_plsf_5_tbl",
+  "len": 1024
+ },
+ "dico4_lsf_5": {
+  "file": "q_plsf_5_tbl",
+  "len": 1024
+ },
+ "dico5_lsf_5": {
+  "file": "q_plsf_5_tbl",
+  "len": 256
+ },
+ "table_gain_highrates": {
+  "file": "qua_gain_tbl",
+  "len": 512
+ },
+ "table_gain_lowrates": {
+  "file": "qua_gain_tbl",
+  "len": 256
+ },
+ "sqrt_l_tbl": {
+  "file": "sqrt_l_tbl",
+  "len": 50
+ },
+ "window_200_40": {
+  "file": "window_tab",
+  "len": 240
+ },
+ "window_160_80": {
+  "file": "window_tab",
+  "len": 240
+ },
+ "window_232_8": {
+  "file": "window_tab",
+  "len": 240
+ },
+ "WmfDecBytesPerFrame": {
+  "file": "dec_input_format_tab",
+  "len": 16
+ },
+ "If2DecBytesPerFrame": {
+  "file": "dec_input_format_tab",
+  "len": 16
+ },
+ "table_gain_MR475": {
+  "file": "qgain475_tab",
+  "len": 1024
+ }
+}

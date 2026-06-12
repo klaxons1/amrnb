@@ -1,0 +1,4 @@
+node_modules/
+*.log
+tools/native/amrnb-dec-raw
+tools/native/basicop-vectors
