@@ -20,6 +20,10 @@ export * from './sqrt_l_tbl.js';
 export * from './window_tab.js';
 export * from './dec_input_format_tab.js';
 export * from './qgain475_tab.js';
+export * from './corrwght_tab.js';
+export * from './inter_36_tab.js';
+export * from './lag_wind_tab.js';
+export * from './enc_output_format_tab.js';
 
 import * as _t from './_all.js';
 export { _t };

@@ -26,6 +26,16 @@ DEC_SRCS="agc amrdecode a_refl b_cn_cod bgnscd c_g_aver d1035pf d2_11pf d2_9pf \
   d_gain_c d_gain_p d_plsf_3 d_plsf_5 d_plsf dtx_dec ec_gains ex_ctrl if2_to_ets \
   int_lsf lsp_avg ph_disp post_pro preemph pstfilt qgain475_tab sp_dec wmf_to_ets"
 
+ENC=$AMR/amr_nb/enc
+ENC_SRCS="amrencode autocorr c1035pf c2_11pf c2_9pf c3_14pf c4_17pf c8_31pf \
+  calc_cor calc_en cbsearch cl_ltp cod_amr convolve cor_h cor_h_x2 cor_h_x \
+  corrwght_tab div_32 dtx_enc enc_lag3 enc_lag6 enc_output_format_tab ets_to_if2 \
+  ets_to_wmf g_adapt gain_q g_code g_pitch hp_max inter_36 inter_36_tab l_abs \
+  lag_wind lag_wind_tab l_comp levinson l_extract lflg_upd l_negate lpc ol_ltp \
+  pitch_fr pitch_ol p_ol_wgh pre_big pre_proc prm2bits qgain475 qgain795 \
+  q_gain_c q_gain_p qua_gain s10_8pf set_sign sid_sync sp_enc spreproc spstproc \
+  ton_stab vad1"
+
 COMMON_SRCS="add az_lsp bitno_tab bitreorder_tab c2_9pf_tab div_s extract_h extract_l \
   gains_tbl gc_pred get_const_tbls gmed_n gray_tbl grid_tbl int_lpc inv_sqrt \
   inv_sqrt_tbl l_deposit_h l_deposit_l log2 log2_norm log2_tbl lsfwt l_shr_r lsp_az \
@@ -40,6 +50,13 @@ for f in $COMMON_SRCS; do SRCS="$SRCS $COMMON/src/$f.cpp"; done
 
 g++ $CXXFLAGS $SRCS -x c amrnb-dec-raw.c -o amrnb-dec-raw
 echo "built: tools/native/amrnb-dec-raw"
+
+ENC_ALL="$OC/amrnb/wrapper.cpp"
+for f in $ENC_SRCS;    do ENC_ALL="$ENC_ALL $ENC/src/$f.cpp"; done
+for f in $COMMON_SRCS; do ENC_ALL="$ENC_ALL $COMMON/src/$f.cpp"; done
+g++ $CXXFLAGS -UDISABLE_AMRNB_ENCODER -DDISABLE_AMRNB_DECODER \
+  $ENC_ALL -x c amrnb-enc-raw.c -o amrnb-enc-raw
+echo "built: tools/native/amrnb-enc-raw"
 
 BASICOP_SRCS=""
 for f in add sub shr mult_r round shr_r div_s l_shr_r norm_l norm_s \

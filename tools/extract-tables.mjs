@@ -22,6 +22,9 @@ const FILES = [
   // decoder tables
   ...['dec_input_format_tab', 'qgain475_tab'].map((f) =>
     path.join(AMR, 'dec/src', f + '.cpp')),
+  // encoder tables
+  ...['corrwght_tab', 'inter_36_tab', 'lag_wind_tab', 'enc_output_format_tab'].map((f) =>
+    path.join(AMR, 'enc/src', f + '.cpp')),
 ];
 
 function stripComments(src) {

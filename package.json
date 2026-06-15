@@ -1,7 +1,7 @@
 {
   "name": "audioc2",
   "version": "0.1.0",
-  "description": "Pure JavaScript AMR-NB codec, hand-ported from opencore-amr 0.1.6 (bit-exact)",
+  "description": "Pure JavaScript AMR-NB encoder/decoder, hand-ported from opencore-amr 0.1.6 (bit-exact)",
   "type": "module",
   "main": "src/index.js",
   "types": "index.d.ts",

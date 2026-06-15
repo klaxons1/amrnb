@@ -252,5 +252,29 @@
  "table_gain_MR475": {
   "file": "qgain475_tab",
   "len": 1024
+ },
+ "corrweight": {
+  "file": "corrwght_tab",
+  "len": 251
+ },
+ "inter_6": {
+  "file": "inter_36_tab",
+  "len": 25
+ },
+ "lag_h": {
+  "file": "lag_wind_tab",
+  "len": 10
+ },
+ "lag_l": {
+  "file": "lag_wind_tab",
+  "len": 10
+ },
+ "WmfEncBytesPerFrame": {
+  "file": "enc_output_format_tab",
+  "len": 16
+ },
+ "If2EncBytesPerFrame": {
+  "file": "enc_output_format_tab",
+  "len": 16
  }
 }
