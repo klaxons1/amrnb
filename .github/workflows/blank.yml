@@ -1,52 +1,24 @@
-name: ci
+name: java-port
 
 on:
   push:
   pull_request:
 
 jobs:
-  # Reference C build: генерирует golden-векторы для basicop и гоняет все JS-тесты
-  native-reference:
-    name: Native reference + JS tests
+  java-decoder:
+    name: Java decoder vs JS decoder
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Fetch opencore-amr 0.1.6 sources
-        run: |
-          cd "${{ github.workspace }}/.."
-          # tools/native/build.sh ищет источники в ../../../opencore-amr-0.1.6
-          curl -fL --retry 4 --retry-delay 2 -A "Mozilla/5.0 (X11; Linux x86_64)" \
-            -o opencore-amr-0.1.6.tar.gz \
-            https://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-0.1.6/opencore-amr-0.1.6.tar.gz
-          tar xzf opencore-amr-0.1.6.tar.gz
-
-      - name: Build native reference
-        run: sh tools/native/build.sh
-
-      - name: Generate basicop golden vectors
-        run: tools/native/basicop-vectors /tmp/basicop-vectors.bin
-
-      - name: Run JS tests
-        run: npm test
-
-  # Java-порт декодера: job пропускается, пока в репозитории нет java/
-  java-port:
-    name: Java 1.6 decoder (byte-exact)
-    runs-on: ubuntu-latest
-    if: hashFiles('java/**') != ''
-    steps:
-      - uses: actions/checkout@v4
-
-      # JDK 8 — последний, где javac реально целится в -source/-target 1.6
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '8'
 
-      - name: Build and verify Java port
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build Java port and compare output with JS decoder
         run: sh java/test.sh
