@@ -71,7 +71,9 @@ out.push('final class Tables {');
 out.push('    private Tables() {}');
 out.push('');
 for (const t of tables) {
-  out.push(`    static final ${t.type}[] ${t.name} = new ${t.type}[${t.values.length}];`);
+  // Not final: values are assigned from the loadTablesN() methods (a final
+  // field could only be assigned inside <clinit>, which is what we avoid).
+  out.push(`    static ${t.type}[] ${t.name} = new ${t.type}[${t.values.length}];`);
 }
 out.push('');
 out.push('    static {');
