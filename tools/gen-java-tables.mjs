@@ -1,18 +1,19 @@
 #!/usr/bin/env node
-// Generates java/src/amr/Tbls*.java from the JS table modules in
+// Generates java/src/amr/Tables.java from the JS table modules in
 // src/common/tables/*.js (same source as src/common/tables/index.js).
 //
-// All tables live in carrier classes Tbls0, Tbls1, ... (one per source file);
-// a single <clinit> must stay under the 64 KB JVM method limit, which a
-// monolithic class would exceed. Tbls.java re-exports every table as a
-// forwarding field so call sites just use Tbls.<name>.
+// All tables live in ONE class. A single <clinit> cannot hold every array
+// literal (64 KB JVM method limit), so values are written from a few private
+// static loadTablesN() methods, each kept under the limit; <clinit> only
+// allocates the arrays and calls the loaders.
 //
 // Run from the repo root: node tools/gen-java-tables.mjs
 import fs from 'node:fs';
 import path from 'node:path';
 
 const TABLES_DIR = path.join(import.meta.dirname, '../src/common/tables');
-const OUT_DIR = path.join(import.meta.dirname, '../java/src/amr');
+const OUT = path.join(import.meta.dirname, '../java/src/amr/Tables.java');
+const ELEMS_PER_LOADER = 6000; /* ~7 bytes of bytecode per element; 6000*7 < 64KB */
 
 const files = fs.readdirSync(TABLES_DIR)
   .filter(f => f.endsWith('.js') && f !== 'index.js' && f !== '_all.js')
@@ -46,54 +47,52 @@ for (const f of files) {
   }
 }
 
-// One carrier class per source file, so every <clinit> stays small.
-const carriers = new Map(); // file -> index
-for (const t of tables) {
-  if (!carriers.has(t.file)) carriers.set(t.file, carriers.size);
-}
-
-for (const [file, idx] of carriers) {
-  const cls = `Tbls${idx}`;
-  const out = [];
-  out.push('package amr;');
-  out.push('');
-  out.push('/**');
-  out.push(` * Tables from ${file} (machine-extracted from opencore-amr 0.1.6`);
-  out.push(' * common/src/*_tbl.cpp). Do not edit by hand.');
-  out.push(' * Regenerate with: node tools/gen-java-tables.mjs');
-  out.push(' */');
-  out.push(`final class ${cls} {`);
-  out.push(`    private ${cls}() {}`);
-  out.push('');
-  for (const t of tables) {
-    if (t.file !== file) continue;
-    out.push(`    static final ${t.type}[] ${t.name} = {`);
-    for (let i = 0; i < t.values.length; i += 12) {
-      out.push('        ' + t.values.slice(i, i + 12).join(', ') + (i + 12 < t.values.length ? ',' : ''));
-    }
-    out.push('    };');
-    out.push('');
+// Greedy bin packing of tables into loaders (biggest first).
+const loaders = []; // [{ name, items: [] }]
+for (const t of [...tables].sort((a, b) => b.values.length - a.values.length)) {
+  let bin = loaders.find(b => b.size + t.values.length <= ELEMS_PER_LOADER);
+  if (!bin) {
+    bin = { name: `loadTables${loaders.length}`, items: [], size: 0 };
+    loaders.push(bin);
   }
-  out.push('}');
-  fs.writeFileSync(path.join(OUT_DIR, `${cls}.java`), out.join('\n') + '\n');
+  bin.items.push(t);
+  bin.size += t.values.length;
 }
 
-// Facade
 const out = [];
 out.push('package amr;');
 out.push('');
 out.push('/**');
-out.push(' * Tables facade, generated from the JS table modules (which are');
-out.push(' * machine-extracted from opencore-amr 0.1.6 common/src/*_tbl.cpp).');
-out.push(' * Do not edit by hand. Regenerate with: node tools/gen-java-tables.mjs');
+out.push(' * Tables, generated from the JS table modules (which are machine-extracted');
+out.push(' * from opencore-amr 0.1.6 common/src/*_tbl.cpp). Do not edit by hand.');
+out.push(' * Regenerate with: node tools/gen-java-tables.mjs');
 out.push(' */');
-out.push('public final class Tbls {');
-out.push('    private Tbls() {}');
+out.push('final class Tables {');
+out.push('    private Tables() {}');
 out.push('');
 for (const t of tables) {
-  out.push(`    public static final ${t.type}[] ${t.name} = Tbls${carriers.get(t.file)}.${t.name};`);
+  out.push(`    static final ${t.type}[] ${t.name} = new ${t.type}[${t.values.length}];`);
+}
+out.push('');
+out.push('    static {');
+for (const l of loaders) {
+  out.push(`        ${l.name}();`);
+}
+out.push('    }');
+out.push('');
+for (const l of loaders) {
+  out.push(`    private static void ${l.name}() {`);
+  for (const t of l.items) {
+    out.push(`        ${t.type}[] t = ${t.name};`);
+    for (let i = 0; i < t.values.length; i += 12) {
+      const chunk = t.values.slice(i, i + 12);
+      out.push('        t[' + chunk.map((v, j) => `${i + j}]=${v}`).join('; t[') + ';');
+    }
+    out.push('');
+  }
+  out.push('    }');
+  out.push('');
 }
 out.push('}');
-fs.writeFileSync(path.join(OUT_DIR, 'Tbls.java'), out.join('\n') + '\n');
-
-console.log(`wrote ${carriers.size} carrier classes + Tbls.java (${tables.length} tables)`);
+fs.writeFileSync(OUT, out.join('\n') + '\n');
+console.log(`wrote ${OUT}: ${tables.length} tables in ${loaders.length} loaders`);

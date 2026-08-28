@@ -15,12 +15,12 @@ echo "== decode fixtures with the Java decoder =="
 OUT="${TMPDIR:-/tmp}/amr-java-pcm"
 rm -rf "$OUT"
 mkdir -p "$OUT"
-java -cp build amr.DecTool ../test/fixtures "$OUT"
+java -cp build amr.Main dec ../test/fixtures "$OUT"
 
 echo "== compare with the JS decoder =="
 node compare.mjs ../test/fixtures "$OUT"
 
 echo "== benchmark (same runner, same fixtures) =="
 FIXTURES=$(ls ../test/fixtures/*.amr | sort)
-java -cp build amr.Bench $FIXTURES
+java -cp build amr.Main bench $FIXTURES
 node bench-js.mjs $FIXTURES
