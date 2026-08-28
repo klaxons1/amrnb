@@ -1,167 +1,174 @@
 package amr;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-public final class Main{
-private Main(){
-}
-static final int[]a={
-13,14,16,18,20,21,27,32,6,1,1,1,1,1,1,1}
-;
-static final byte[]b={
-0x23,0x21,0x41,0x4d,0x52,0x0a}
-;
-public static void main(String[]Q17)throws IOException{
-if(Q17.length<2){
-System.err.println("usage:");
-System.err.println("  java amr.Main dec <in.amr|inDir> <out.pcm|outDir>");
-System.err.println("  java amr.Main bench <in.amr> [<in.amr> ...]");
-System.exit(2);
-}
-String R17=Q17[0];
-if(R17.equals("dec")){
-File S17=new File(Q17[1]);
-File out=new File(Q17[2]);
-if(S17.isDirectory()){
-if(!out.isDirectory()&&!out.mkdirs()){
-System.err.println("cannot create output dir: "+out);
-System.exit(2);
-}
-File[]T17=S17.listFiles();
-if(T17==null){
-System.err.println("cannot list dir: "+S17);
-System.exit(2);
-}
-for(File Z4:T17){
-if(Z4.getName().endsWith(".amr")){
-String i=Z4.getName().substring(0,Z4.getName().length()-4)+".pcm";
-U17(Z4,new File(out,i));
-System.out.println("decoded "+Z4.getName()+" -> "+i);
-}
-}
-}
-else{
-U17(S17,out);
-System.out.println("decoded "+S17+" -> "+out);
-}
-}
-else if(R17.equals("bench")){
-V17(Q17,1);
-}
-else{
-System.err.println("unknown command: "+R17);
-System.exit(2);
-}
-}
-static void U17(File S17,File out)throws IOException{
-byte[]l=W17(S17);
-AmrNbDecoder X17=new AmrNbDecoder();
-short[]i=X17.decodeAll(l);
-FileOutputStream Y17=new FileOutputStream(out);
-try{
-byte[]Z17=new byte[i.length*2];
-for(int o=0;
-o<i.length;
-o++){
-Z17[o*2]=(byte)(i[o]&0xff);
-Z17[o*2+1]=(byte)(i[o]>>8);
-}
-Y17.write(Z17);
-}
-finally{
-Y17.close();
-}
-}
-static void V17(String[]Q17,int a18)throws IOException{
-byte[][]b18=new byte[Q17.length-a18][];
-long c18=0;
-for(int o=a18;
-o<Q17.length;
-o++){
-b18[o-a18]=W17(new File(Q17[o]));
-int m=d18(b18[o-a18])?6:0;
-while(m+1<=b18[o-a18].length){
-int B17=(b18[o-a18][m]>>3)&0x0f;
-int r=a[B17];
-if(m+r>b18[o-a18].length){
-break;
-}
-m+=r;
-c18++;
-}
-}
-final double e18=c18*0.02;
-f18(b18);
-long g18=h18.i18;
-for(int j18=0;
-j18<3;
-j18++){
-long c5=System.nanoTime();
-f18(b18);
-long k18=(System.nanoTime()-c5)/1000000;
-if(k18<g18){
-g18=k18;
-}
-}
-double l18=e18/(g18/1000.0);
-System.out.printf("Java bench: frames=%d audio=%.0fs elapsed=%dms realtime=%.0fx ms/frame=%.3f samples/s=%.0f%n",c18,e18,g18,l18,g18/(double)c18,c18*160.0/(g18/1000.0));
-System.out.printf("::warning title=amr-java-bench::frames=%d audio=%.0fs elapsed=%dms realtime=%.0fx ms/frame=%.3f samples/s=%.0f%n",c18,e18,g18,l18,g18/(double)c18,c18*160.0/(g18/1000.0));
-}
-private static void f18(byte[][]b18){
-AmrNbDecoder X17=new AmrNbDecoder();
-byte[]h=new byte[32];
-short[]i=new short[160];
-for(int o=0;
-o<b18.length;
-o++){
-byte[]l=b18[o];
-int m=d18(l)?6:0;
-while(m+1<=l.length){
-int B17=(l[m]>>3)&0x0f;
-int r=a[B17];
-if(m+r>l.length){
-break;
-}
-System.arraycopy(l,m,h,0,r);
-X17.decode(h,i,0);
-m+=r;
-}
-}
-}
-static boolean d18(byte[]l){
-if(l.length<b.length){
-return false;
-}
-for(int o=0;
-o<b.length;
-o++){
-if(l[o]!=b[o]){
-return false;
-}
-}
-return true;
-}
-static byte[]W17(File Z4)throws IOException{
-FileInputStream m18=new FileInputStream(Z4);
-try{
-long n18=Z4.length();
-if(n18>o18.i18){
-throw new IOException("file too large: "+Z4);
-}
-byte[]p18=new byte[(int)n18];
-int m=0;
-while(m<p18.length){
-int s=m18.read(p18,m,p18.length-m);
-if(s<0){
-break;
-}
-m+=s;
-}
-return p18;
-}
-finally{
-m18.close();
-}
-}
+
+/**
+ * CLI for the AMR-NB decoder (used by java/test.sh, also handy standalone).
+ *
+ *   java amr.Main dec <in.amr|inDir> <out.pcm|outDir>
+ *   java amr.Main bench <in.amr> [<in.amr> ...]
+ *
+ * dec writes raw 16-bit signed little-endian PCM, 8 kHz mono.
+ * bench prints wall-clock timings (3 passes, best of last 3, 1 warmup).
+ */
+public final class Main {
+    private Main() {}
+
+    static final int[] FRAME_SIZE = {
+        13, 14, 16, 18, 20, 21, 27, 32, 6, 1, 1, 1, 1, 1, 1, 1
+    };
+    static final byte[] MAGIC = { 0x23, 0x21, 0x41, 0x4d, 0x52, 0x0a }; /* #!AMR\n */
+
+    public static void main(String[] args) throws IOException {
+        if (args.length < 2) {
+            System.err.println("usage:");
+            System.err.println("  java amr.Main dec <in.amr|inDir> <out.pcm|outDir>");
+            System.err.println("  java amr.Main bench <in.amr> [<in.amr> ...]");
+            System.exit(2);
+        }
+        String cmd = args[0];
+        if (cmd.equals("dec")) {
+            File in = new File(args[1]);
+            File out = new File(args[2]);
+            if (in.isDirectory()) {
+                if (!out.isDirectory() && !out.mkdirs()) {
+                    System.err.println("cannot create output dir: " + out);
+                    System.exit(2);
+                }
+                File[] files = in.listFiles();
+                if (files == null) {
+                    System.err.println("cannot list dir: " + in);
+                    System.exit(2);
+                }
+                for (File f : files) {
+                    if (f.getName().endsWith(".amr")) {
+                        String pcm = f.getName().substring(0, f.getName().length() - 4) + ".pcm";
+                        decodeFile(f, new File(out, pcm));
+                        System.out.println("decoded " + f.getName() + " -> " + pcm);
+                    }
+                }
+            } else {
+                decodeFile(in, out);
+                System.out.println("decoded " + in + " -> " + out);
+            }
+        } else if (cmd.equals("bench")) {
+            bench(args, 1);
+        } else {
+            System.err.println("unknown command: " + cmd);
+            System.exit(2);
+        }
+    }
+
+    static void decodeFile(File in, File out) throws IOException {
+        byte[] data = readAll(in);
+        AmrNbDecoder dec = new AmrNbDecoder();
+        short[] pcm = dec.decodeAll(data);
+        FileOutputStream fos = new FileOutputStream(out);
+        try {
+            byte[] le = new byte[pcm.length * 2];
+            for (int i = 0; i < pcm.length; i++) {
+                le[i * 2] = (byte) (pcm[i] & 0xff);
+                le[i * 2 + 1] = (byte) (pcm[i] >> 8);
+            }
+            fos.write(le);
+        } finally {
+            fos.close();
+        }
+    }
+
+    /** bench(args, argOff): args[argOff..] are .amr files. */
+    static void bench(String[] args, int argOff) throws IOException {
+        byte[][] datas = new byte[args.length - argOff][];
+        long totalFrames = 0;
+        for (int i = argOff; i < args.length; i++) {
+            datas[i - argOff] = readAll(new File(args[i]));
+            int off = isMagic(datas[i - argOff]) ? 6 : 0;
+            while (off + 1 <= datas[i - argOff].length) {
+                int type = (datas[i - argOff][off] >> 3) & 0x0f;
+                int size = FRAME_SIZE[type];
+                if (off + size > datas[i - argOff].length) {
+                    break;
+                }
+                off += size;
+                totalFrames++;
+            }
+        }
+        final double audioSec = totalFrames * 0.02;
+
+        decodeOnce(datas); /* warmup */
+        long best = Long.MAX_VALUE;
+        for (int pass = 0; pass < 3; pass++) {
+            long t0 = System.nanoTime();
+            decodeOnce(datas);
+            long ms = (System.nanoTime() - t0) / 1000000;
+            if (ms < best) {
+                best = ms;
+            }
+        }
+
+        double rt = audioSec / (best / 1000.0);
+        System.out.printf("Java bench: frames=%d audio=%.0fs elapsed=%dms realtime=%.0fx ms/frame=%.3f samples/s=%.0f%n",
+            totalFrames, audioSec, best, rt, best / (double) totalFrames,
+            totalFrames * 160.0 / (best / 1000.0));
+        System.out.printf("::warning title=amr-java-bench::frames=%d audio=%.0fs elapsed=%dms realtime=%.0fx ms/frame=%.3f samples/s=%.0f%n",
+            totalFrames, audioSec, best, rt, best / (double) totalFrames,
+            totalFrames * 160.0 / (best / 1000.0));
+    }
+
+    private static void decodeOnce(byte[][] datas) {
+        AmrNbDecoder dec = new AmrNbDecoder();
+        byte[] frame = new byte[32];
+        short[] pcm = new short[160];
+        for (int i = 0; i < datas.length; i++) {
+            byte[] data = datas[i];
+            int off = isMagic(data) ? 6 : 0;
+            while (off + 1 <= data.length) {
+                int type = (data[off] >> 3) & 0x0f;
+                int size = FRAME_SIZE[type];
+                if (off + size > data.length) {
+                    break;
+                }
+                System.arraycopy(data, off, frame, 0, size);
+                dec.decode(frame, pcm, 0);
+                off += size;
+            }
+        }
+    }
+
+    static boolean isMagic(byte[] data) {
+        if (data.length < MAGIC.length) {
+            return false;
+        }
+        for (int i = 0; i < MAGIC.length; i++) {
+            if (data[i] != MAGIC[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static byte[] readAll(File f) throws IOException {
+        FileInputStream fis = new FileInputStream(f);
+        try {
+            long len = f.length();
+            if (len > Integer.MAX_VALUE) {
+                throw new IOException("file too large: " + f);
+            }
+            byte[] buf = new byte[(int) len];
+            int off = 0;
+            while (off < buf.length) {
+                int n = fis.read(buf, off, buf.length - off);
+                if (n < 0) {
+                    break;
+                }
+                off += n;
+            }
+            return buf;
+        } finally {
+            fis.close();
+        }
+    }
 }
