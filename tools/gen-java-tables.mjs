@@ -85,10 +85,11 @@ out.push('');
 for (const l of loaders) {
   out.push(`    private static void ${l.name}() {`);
   for (const t of l.items) {
-    out.push(`        ${t.type}[] t = ${t.name};`);
+    const v = `t_${t.name}`; /* unique per table: avoids redeclaration, short vs int */
+    out.push(`        ${t.type}[] ${v} = ${t.name};`);
     for (let i = 0; i < t.values.length; i += 12) {
       const chunk = t.values.slice(i, i + 12);
-      out.push('        t[' + chunk.map((v, j) => `${i + j}]=${v}`).join('; t[') + ';');
+      out.push(`        ${v}[` + chunk.map((val, j) => `${i + j}]=${val}`).join(`; ${v}[`) + ';');
     }
     out.push('');
   }
