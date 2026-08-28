@@ -79,6 +79,8 @@ public final class AmrNbDecoder {
         return out;
     }
 
+}
+
 /**
  * Constants and enums, ported from opencore-amr 0.1.6:
  *   .../amr_nb/common/include/cnst.h, mode.h, frame_type_3gpp.h, frame.h
@@ -5784,5 +5786,4 @@ final class AmrDecode {
         }
         AMRDecode(state, type, input, 1, output, 0);
     }
-}
 }
