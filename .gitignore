@@ -1,5 +1,1 @@
-node_modules/
-*.log
-tools/native/amrnb-dec-raw
-tools/native/amrnb-enc-raw
-tools/native/basicop-vectors
+java/build/
