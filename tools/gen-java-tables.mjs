@@ -1,26 +1,48 @@
 #!/usr/bin/env node
-// Generates java/src/amr/Tables.java from the JS table modules in
-// src/common/tables/*.js (same source as src/common/tables/index.js).
+// Generates java/src/javax/microedition/media/decoders/Tables.java from the
+// JS table modules in src/common/tables/*.js (same source as the JS
+// src/common/tables/index.js).
 //
-// All tables live in ONE class. A single <clinit> cannot hold every array
-// literal (64 KB JVM method limit), so values are written from a few private
-// static loadTablesN() methods, each kept under the limit; <clinit> only
-// allocates the arrays and calls the loaders.
+// All tables live in ONE package-private class. A single <clinit> cannot
+// hold every array literal (64 KB JVM method limit), so values are written
+// from small per-table init methods, each kept far below the limit; <clinit>
+// only allocates the arrays and calls the loaders.
 //
 // Run from the repo root: node tools/gen-java-tables.mjs
 import fs from 'node:fs';
 import path from 'node:path';
 
 const TABLES_DIR = path.join(import.meta.dirname, '../src/common/tables');
-const OUT = path.join(import.meta.dirname, '../java/src/amr/Tables.java');
-// Each table is initialized by its own small method (see below).
+const OUT = path.join(import.meta.dirname, '../java/src/javax/microedition/media/decoders/Tables.java');
+
+const BANNER = [
+  '/*',
+  '\tThis file is part of the amrnb project (https://github.com/klaxons1/amrnb):',
+  '\ta pure Java port of the AMR-NB (narrowband) speech codec.',
+  '',
+  '\tLicensed under the Apache License, Version 2.0 (the "License");',
+  '\tyou may not use this file except in compliance with the License.',
+  '\tYou may obtain a copy of the License at',
+  '',
+  '\t    http://www.apache.org/licenses/LICENSE-2.0',
+  '',
+  '\tUnless required by applicable law or agreed to in writing, software',
+  '\tdistributed under the License is distributed on an "AS IS" BASIS,',
+  '\tWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.',
+  '\tSee the License for the specific language governing permissions and',
+  '\tlimitations under the License.',
+  '',
+  '\tThis file is a derivative work of the opencore-amr 0.1.6 reference codec',
+  '\t(https://sourceforge.net/projects/opencore-amr/), original code',
+  '\t(C) 1998-2010 PacketVideo; portions derived from 3GPP TS 26.073',
+  '\t(C) 2004 3GPP Organizational Partners.',
+  '*/',
+];
 
 const files = fs.readdirSync(TABLES_DIR)
   .filter(f => f.endsWith('.js') && f !== 'index.js' && f !== '_all.js')
   .sort();
 
-// Greedy bin packing is no longer needed: each table gets its own tiny
-// init method below, so no method ever approaches the 64 KB limit.
 const tables = []; // { file, name, type, values[] }
 for (const f of files) {
   const src = fs.readFileSync(path.join(TABLES_DIR, f), 'utf8');
@@ -50,31 +72,36 @@ for (const f of files) {
 }
 
 const out = [];
-out.push('package amr;');
+out.push(...BANNER);
 out.push('');
-out.push('/**');
-out.push(' * Tables, generated from the JS table modules (which are machine-extracted');
-out.push(' * from opencore-amr 0.1.6 common/src/*_tbl.cpp). Do not edit by hand.');
-out.push(' * Regenerate with: node tools/gen-java-tables.mjs');
+out.push('package javax.microedition.media.decoders;');
+out.push('');
+out.push('/*');
+out.push(' * Tables, generated from the JS table modules in src/common/tables/*.js');
+out.push(' * (which are machine-extracted from opencore-amr 0.1.6 common/src/*_tbl.cpp).');
+out.push(' * Do not edit by hand - regenerate with: node tools/gen-java-tables.mjs');
 out.push(' */');
-out.push('final class Tables {');
-out.push('    private Tables() {}');
+out.push('final class Tables');
+out.push('{');
+out.push('\tprivate Tables() {}');
 out.push('');
 // One tiny private init method per table: its array literal stays far below
 // the 64 KB JVM method limit (a single <clinit> with every literal would
 // exceed it), and the source stays compact (plain literal syntax).
 for (const t of tables) {
-  out.push(`    static final ${t.type}[] ${t.name} = ${t.name}();`);
+  out.push(`\tstatic final ${t.type}[] ${t.name} = ${t.name}();`);
 }
 out.push('');
 for (const t of tables) {
-  out.push(`    private static ${t.type}[] ${t.name}() {`);
-  out.push(`        return new ${t.type}[] {`);
+  out.push(`\tprivate static ${t.type}[] ${t.name}()`);
+  out.push('\t{');
+  out.push(`\t\treturn new ${t.type}[]`);
+  out.push('\t\t{');
   for (let i = 0; i < t.values.length; i += 12) {
-    out.push('            ' + t.values.slice(i, i + 12).join(', ') + (i + 12 < t.values.length ? ',' : ''));
+    out.push('\t\t\t' + t.values.slice(i, i + 12).join(', ') + (i + 12 < t.values.length ? ',' : ''));
   }
-  out.push('        };');
-  out.push('    }');
+  out.push('\t\t};');
+  out.push('\t}');
   out.push('');
 }
 out.push('}');

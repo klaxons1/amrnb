@@ -10,8 +10,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const DIR = path.join(import.meta.dirname, '../java/src/amr');
-const FILES = ['AmrNbDecoder.java', 'Tables.java', 'Main.java'];
+const DIR = path.join(import.meta.dirname, '../java/src');
+// All *.java files under java/src (the amr CLI package and the
+// javax.microedition.media.decoders library package).
+function findJavaFiles(dir) {
+  const out = [];
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) out.push(...findJavaFiles(p));
+    else if (e.name.endsWith('.java')) out.push(p);
+  }
+  return out;
+}
+const FILES = findJavaFiles(DIR).map(f => path.relative(DIR, f));
 
 const KEYWORDS = new Set(
   ('abstract assert boolean break byte case catch char class const continue default do double '
@@ -28,7 +39,9 @@ const KEEP = new Set([
   'File', 'FileInputStream', 'FileOutputStream', 'IOException',
   'read', 'write', 'close', 'length', 'isDirectory', 'getName', 'listFiles',
   'mkdirs', 'endsWith', 'substring', 'arraycopy', 'nanoTime', 'equals',
-  'java', 'io', 'amr', 'Main', 'AmrNbDecoder', 'decode', 'decodeAll', 'reset',
+  'Long', 'Integer', 'MAX_VALUE', 'MIN_VALUE', 'Double', 'isInfinite',
+  'java', 'io', 'amr', 'Main', 'AMRDecoder', 'decodeAMR', 'decode', 'decodeAll', 'reset',
+  'javax', 'microedition', 'media', 'decoders',
 ]);
 
 const OPS3 = ['<<=', '>>='];
@@ -73,6 +86,19 @@ function tokenize(src) {
     if (/[0-9]/.test(c)) {
       let j = i;
       while (j < n && /[0-9a-fA-FxX.]/.test(src[j])) j++;
+      // Decimal exponent (1e10, 1.5e-3). Only reachable after the hex loop,
+      // since 'e' is consumed above only while scanning an 0x... literal.
+      if (j < n && /[eE]/.test(src[j]) && !/0[xX]/.test(src.slice(i, j + 1))) {
+        let k = j + 1;
+        if (k < n && /[+-]/.test(src[k])) k++;
+        if (k < n && /[0-9]/.test(src[k])) {
+          while (k < n && /[0-9]/.test(src[k])) k++;
+          j = k;
+        }
+      }
+      // Long / float / double suffix (0xffffffffL, 1.0f, 2d). Without this,
+      // the 'L' would be tokenized as an identifier and renamed.
+      if (j < n && /[lLfFdD]/.test(src[j])) j++;
       tokens.push({ t: 'num', w: src.slice(i, j) });
       i = j;
       continue;

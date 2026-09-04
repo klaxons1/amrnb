@@ -1,4 +1,4 @@
-// Wall-clock benchmark for the JS decoder, mirrors java/src/amr/Bench.java.
+// Wall-clock benchmark for the JS decoder, mirrors amr.Main bench (java/).
 // Usage: node bench-js.mjs <in.amr> [<in.amr> ...]
 import fs from 'node:fs';
 import { AmrNbDecoder } from '../src/index.js';
